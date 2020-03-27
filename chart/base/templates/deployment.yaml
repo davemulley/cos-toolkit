@@ -36,7 +36,7 @@ spec:
             tcpSocket:
               port: 9443
             initialDelaySeconds: 45
-            periodSeconds: 45
+            periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
             failureThreshold: 3
@@ -44,17 +44,16 @@ spec:
             tcpSocket:
               port: 9443
             initialDelaySeconds: 45
-            periodSeconds: 45
+            periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
             failureThreshold: 3
           env:
-            - name: INGRESS_HOST
-              value: ""
-            - name: PROTOCOLS
-              value: ""
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "starter-kit.fullname" . }}-envvars
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
