@@ -33,13 +33,21 @@ spec:
               containerPort: {{ .Values.image.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 45
+            periodSeconds: 45
+            successThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 3
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 45
+            periodSeconds: 45
+            successThreshold: 1
+            timeoutSeconds: 1
+            failureThreshold: 3
           env:
             - name: INGRESS_HOST
               value: ""
