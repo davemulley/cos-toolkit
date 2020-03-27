@@ -12,6 +12,6 @@ spec:
     name: {{ $fullName }}
     weight: 100
   tls:
-    termination: edge
+    termination: passthrough
   wildcardPolicy: None
 {{- end }}
