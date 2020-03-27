@@ -1,23 +1,18 @@
-# IBM Java SDK UBI is not available on public docker yet. Use regular
-# base as builder until this is ready. For reference:
-# https://github.com/ibmruntimes/ci.docker/tree/master/ibmjava/8/sdk/ubi-min
-
-FROM ibmjava:8-sdk AS builder
-LABEL maintainer="IBM Java Engineering at IBM Cloud"
-
+FROM maven:3.6.0-jdk-8-slim AS build-stage
 WORKDIR /app
 COPY . /app
+RUN mvn clean package
 
-RUN apt-get update && apt-get install -y maven
-RUN mvn -N io.takari:maven:wrapper -Dmaven=3.5.0
-RUN ./mvnw install
+FROM ibmcom/websphere-liberty:kernel-ubi-min
 
-# Multi-stage build. New build stage that uses the UBI as the base image.
-FROM ibmcom/websphere-liberty:kernel-java8-ibmjava-ubi
-LABEL maintainer="IBM Java Engineering at IBM Cloud"
-ENV PATH /project/target/liberty/wlp/bin/:$PATH
+ARG SSL=false
+ARG MP_MONITORING=false
+ARG HTTP_ENDPOINT=false
 
-COPY --from=builder /app/target/liberty/wlp/usr/servers/defaultServer /config/
+COPY --chown=1001:0 ./liberty/server.xml /opt/ibm/wlp/usr/servers/defaultServer/server.xml
+COPY --chown=1001:0 ./liberty/jvm.options /opt/ibm/wlp/usr/servers/defaultServer/jvm.options
+COPY --chown=1001:0 --from=build-stage /app/CustomerOrderServicesApp/target/CustomerOrderServicesApp-0.1.0-SNAPSHOT.ear /opt/ibm/wlp/usr/servers/defaultServer/apps/CustomerOrderServicesApp-0.1.0-SNAPSHOT.ear
+COPY --chown=1001:0 ./resources/ /opt/ibm/wlp/usr/shared/resources/
 
 USER root
 RUN chmod g+w /config/apps
